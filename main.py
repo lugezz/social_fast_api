@@ -1,10 +1,17 @@
+from random import randrange
 from typing import Optional
-from fastapi import FastAPI
+
+from fastapi import FastAPI, HTTPException, Response, status
 # from fastapi.params import Body
 from pydantic import BaseModel
+from requests import delete
 
 
 app = FastAPI()
+my_posts = [
+    {'id': 1, 'title': 'favourite food', 'content': 'this is the favourite food for Artime'},
+    {'id': 2, 'title': 'favourite music', 'content': 'this is the favourite music for Artime in 2022'},
+]
 
 
 class Post(BaseModel):
@@ -20,17 +27,88 @@ def root():
 
 
 @app.get("/posts")
-def get_post():
-    return {"Data": "This is your posts"}
+def get_posts():
+    return {"Data": my_posts}
 
 
-@app.post("/createposts")
-def create_post(new_post: Post):
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
+def create_post(post: Post):
     # We expect: title: str, body: str
+    post_dict = post.dict()
+    post_dict['id'] = randrange(3, 1000)
 
-    print(new_post)
-    summary = f"Title: {new_post.title}, Content: {new_post.content}, Rating: {new_post.rating}"
-    if new_post.published:
-        summary += ", and it's published"
+    my_posts.append(post_dict)
 
-    return {'new_post': summary}
+    return {'all_posts': my_posts}
+
+
+def get_data_from_id(id: int) -> dict:
+    resp = {}
+
+    for post in my_posts:
+        if post['id'] == id:
+            resp = post
+            break
+
+    return resp
+
+
+def get_index_from_id(id: int) -> dict:
+    resp = -1
+
+    for ind, post in enumerate(my_posts):
+        if post['id'] == id:
+            resp = ind
+            break
+
+    return resp
+
+
+@app.get("/posts/latest")
+def get_latest():
+    this_post = my_posts[-1]
+
+    return {"Data": this_post}
+
+
+@app.get("/posts/{id}")
+def get_post(id: int):
+    this_post = get_data_from_id(id)
+
+    if not this_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={'message': f'Id {id} not found'})
+        # response.status_code = status.HTTP_404_NOT_FOUND
+        # return {'message': f'Id {id} not found'}
+
+    return {"Data": this_post}
+
+
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+    this_post_index = get_index_from_id(id)
+    deleted_post = ''
+
+    if this_post_index == -1:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={'message': f'Id {id} not found'})
+    else:
+        deleted_post = my_posts.pop(this_post_index)
+
+    return {"Data": f"Post {deleted_post['title']} deleted"}
+
+
+@app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
+def update_post(id: int, post: Post):
+    this_post_index = get_index_from_id(id)
+
+    if this_post_index == -1:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={'message': f'Id {id} not found'})
+    else:
+        this_post = post.dict()
+        this_post['id'] = id
+        my_posts[this_post_index] = this_post
+        print(my_posts)
+
+    return {"Data": f"Post {this_post['title']} updated"}
