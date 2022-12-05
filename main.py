@@ -1,10 +1,9 @@
 from random import randrange
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Response, status
+from fastapi import FastAPI, HTTPException, status
 # from fastapi.params import Body
 from pydantic import BaseModel
-from requests import delete
 
 
 app = FastAPI()
