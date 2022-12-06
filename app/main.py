@@ -10,6 +10,7 @@ app = FastAPI()
 my_posts = [
     {'id': 1, 'title': 'favourite food', 'content': 'this is the favourite food for Artime'},
     {'id': 2, 'title': 'favourite music', 'content': 'this is the favourite music for Artime in 2022'},
+    {'id': 3, 'title': 'old favourite music', 'content': 'this is the favourite music for Artime in 2021'},
 ]
 
 
