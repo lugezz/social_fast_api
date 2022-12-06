@@ -1,4 +1,5 @@
 from random import randrange
+import time
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, status
@@ -14,6 +15,7 @@ my_posts = [
     {'id': 2, 'title': 'favourite music', 'content': 'this is the favourite music for Artime in 2022'},
     {'id': 3, 'title': 'old favourite music', 'content': 'this is the favourite music for Artime in 2021'},
 ]
+retries = 5
 
 
 class Post(BaseModel):
@@ -23,15 +25,19 @@ class Post(BaseModel):
     rating: Optional[int] = None
 
 
-try:
-    conn = psycopg2.connect(host='localhost', dbname='fastapi', user='artime', password='artime80',
-                            cursor_factory=RealDictCursor)
-    cur = conn.cursor()
-    print("Database connection was successfully")
+while retries > 0:
+    try:
+        conn = psycopg2.connect(host='localhost', dbname='fastapi', user='artime', password='artime80',
+                                cursor_factory=RealDictCursor)
+        cur = conn.cursor()
+        print("Database connection was successfully")
+        break
 
-except Exception as error:
-    print("Connection to database failed")
-    print("Error:", error)
+    except Exception as error:
+        print("Connection to database failed")
+        print("Error:", error)
+        time.sleep(2)
+        retries -= 1
 
 
 @app.get("/")
@@ -41,7 +47,9 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"Data": my_posts}
+    cur.execute("SELECT * FROM posts")
+    posts = cur.fetchall()
+    return {"Data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
