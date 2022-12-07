@@ -1,4 +1,3 @@
-from random import randrange
 import time
 from typing import Optional
 
@@ -29,7 +28,7 @@ while retries > 0:
     try:
         conn = psycopg2.connect(host='localhost', dbname='fastapi', user='artime', password='artime80',
                                 cursor_factory=RealDictCursor)
-        cur = conn.cursor()
+        cursor = conn.cursor()
         print("Database connection was successfully")
         break
 
@@ -47,42 +46,24 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    cur.execute("SELECT * FROM posts")
-    posts = cur.fetchall()
+    cursor.execute("SELECT * FROM posts")
+    posts = cursor.fetchall()
     return {"Data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
-    # We expect: title: str, body: str
-    post_dict = post.dict()
-    post_dict['id'] = randrange(3, 1000)
+    sql_sentence = f"INSERT INTO posts (title, content, published) VALUES ('{post.title}', '{post.content}',{post.published})"
+    sql_sentence += " RETURNING *"
+    print(sql_sentence)
 
-    my_posts.append(post_dict)
+    cursor.execute(sql_sentence)
+    new_post = cursor.fetchone()
 
-    return {'all_posts': my_posts}
+    # Commit changes
+    conn.commit()
 
-
-def get_data_from_id(id: int) -> dict:
-    resp = {}
-
-    for post in my_posts:
-        if post['id'] == id:
-            resp = post
-            break
-
-    return resp
-
-
-def get_index_from_id(id: int) -> dict:
-    resp = -1
-
-    for ind, post in enumerate(my_posts):
-        if post['id'] == id:
-            resp = ind
-            break
-
-    return resp
+    return {'new_post': new_post}
 
 
 @app.get("/posts/latest")
@@ -94,7 +75,8 @@ def get_latest():
 
 @app.get("/posts/{id}")
 def get_post(id: int):
-    this_post = get_data_from_id(id)
+    cursor.execute(f"SELECT * FROM posts WHERE ID = {id}")
+    this_post = cursor.fetchone()
 
     if not this_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -107,29 +89,32 @@ def get_post(id: int):
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
-    this_post_index = get_index_from_id(id)
-    deleted_post = ''
+    cursor.execute(f"DELETE FROM posts WHERE ID = {id} RETURNING *")
+    this_deleted_post = cursor.fetchone()
 
-    if this_post_index == -1:
+    if not this_deleted_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
-    else:
-        deleted_post = my_posts.pop(this_post_index)
 
-    return {"Data": f"Post {deleted_post['title']} deleted"}
+    conn.commit()
+
+    return {"Data": f"Post {this_deleted_post['title']} deleted"}
 
 
 @app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
 def update_post(id: int, post: Post):
-    this_post_index = get_index_from_id(id)
+    sql_sentence = "UPDATE posts SET "
+    sql_sentence += f"title = '{post.title}', content = '{post.content}'"
+    if post.published:
+        sql_sentence += f", published = {post.published}"
+    sql_sentence += f" WHERE id = {id} RETURNING *"
 
-    if this_post_index == -1:
+    cursor.execute(sql_sentence)
+    this_post = cursor.fetchone()
+    conn.commit()
+
+    if not this_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
-    else:
-        this_post = post.dict()
-        this_post['id'] = id
-        my_posts[this_post_index] = this_post
-        print(my_posts)
 
     return {"Data": f"Post {this_post['title']} updated"}
