@@ -1,20 +1,16 @@
-import time
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, status
-# from fastapi.params import Body
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from fastapi import Depends, FastAPI, HTTPException, status
+
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from . import models
+from .database import engine, get_db
 
 
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
-my_posts = [
-    {'id': 1, 'title': 'favourite food', 'content': 'this is the favourite food for Artime'},
-    {'id': 2, 'title': 'favourite music', 'content': 'this is the favourite music for Artime in 2022'},
-    {'id': 3, 'title': 'old favourite music', 'content': 'this is the favourite music for Artime in 2021'},
-]
-retries = 5
 
 
 class Post(BaseModel):
@@ -24,35 +20,20 @@ class Post(BaseModel):
     rating: Optional[int] = None
 
 
-while retries > 0:
-    try:
-        conn = psycopg2.connect(host='localhost', dbname='fastapi', user='artime', password='artime80',
-                                cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
-        print("Database connection was successfully")
-        break
-
-    except Exception as error:
-        print("Connection to database failed")
-        print("Error:", error)
-        time.sleep(2)
-        retries -= 1
-
-
 @app.get("/")
 def root():
     return {"message": "Hello World my old friend - Cachulengo"}
 
 
 @app.get("/posts")
-def get_posts():
+def get_posts(db: Session = Depends(get_db)):
     cursor.execute("SELECT * FROM posts")
     posts = cursor.fetchall()
     return {"Data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_post(post: Post):
+def create_post(post: Post, db: Session = Depends(get_db)):
     sql_sentence = f"INSERT INTO posts (title, content, published) VALUES ('{post.title}', '{post.content}',{post.published})"
     sql_sentence += " RETURNING *"
     print(sql_sentence)
@@ -67,14 +48,14 @@ def create_post(post: Post):
 
 
 @app.get("/posts/latest")
-def get_latest():
+def get_latest(db: Session = Depends(get_db)):
     this_post = my_posts[-1]
 
     return {"Data": this_post}
 
 
 @app.get("/posts/{id}")
-def get_post(id: int):
+def get_post(id: int, db: Session = Depends(get_db)):
     cursor.execute(f"SELECT * FROM posts WHERE ID = {id}")
     this_post = cursor.fetchone()
 
@@ -88,7 +69,7 @@ def get_post(id: int):
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int):
+def delete_post(id: int, db: Session = Depends(get_db)):
     cursor.execute(f"DELETE FROM posts WHERE ID = {id} RETURNING *")
     this_deleted_post = cursor.fetchone()
 
@@ -102,7 +83,7 @@ def delete_post(id: int):
 
 
 @app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
-def update_post(id: int, post: Post):
+def update_post(id: int, post: Post, db: Session = Depends(get_db)):
     sql_sentence = "UPDATE posts SET "
     sql_sentence += f"title = '{post.title}', content = '{post.content}'"
     if post.published:
