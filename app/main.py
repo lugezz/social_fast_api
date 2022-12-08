@@ -1,8 +1,7 @@
-from typing import Optional
-
 from fastapi import Depends, FastAPI, HTTPException, status
 
 from pydantic import BaseModel
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from . import models
@@ -17,7 +16,6 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True
-    rating: Optional[int] = None
 
 
 @app.get("/")
@@ -27,75 +25,66 @@ def root():
 
 @app.get("/posts")
 def get_posts(db: Session = Depends(get_db)):
-    cursor.execute("SELECT * FROM posts")
-    posts = cursor.fetchall()
+    posts = db.query(models.Post).all()
+
     return {"Data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_post(post: Post, db: Session = Depends(get_db)):
-    sql_sentence = f"INSERT INTO posts (title, content, published) VALUES ('{post.title}', '{post.content}',{post.published})"
-    sql_sentence += " RETURNING *"
-    print(sql_sentence)
 
-    cursor.execute(sql_sentence)
-    new_post = cursor.fetchone()
+    # new_post = models.Post(title=post.title, content=post.content, published=post.published)
+    # Easiest way unpacking the post dictionary
+    new_post = models.Post(**post.dict())
 
-    # Commit changes
-    conn.commit()
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
 
     return {'new_post': new_post}
 
 
 @app.get("/posts/latest")
 def get_latest(db: Session = Depends(get_db)):
-    this_post = my_posts[-1]
+    this_post = db.query(models.Post).order_by(desc(models.Post.id)).first()
 
     return {"Data": this_post}
 
 
 @app.get("/posts/{id}")
 def get_post(id: int, db: Session = Depends(get_db)):
-    cursor.execute(f"SELECT * FROM posts WHERE ID = {id}")
-    this_post = cursor.fetchone()
-
+    this_post = db.query(models.Post).get(id)
     if not this_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
-        # response.status_code = status.HTTP_404_NOT_FOUND
-        # return {'message': f'Id {id} not found'}
 
     return {"Data": this_post}
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
-    cursor.execute(f"DELETE FROM posts WHERE ID = {id} RETURNING *")
-    this_deleted_post = cursor.fetchone()
+    to_delete_post = db.query(models.Post).filter(models.Post.id == id)
 
-    if not this_deleted_post:
+    if not to_delete_post.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
 
-    conn.commit()
+    to_delete_post.delete(synchronize_session=False)
+    db.commit()
 
-    return {"Data": f"Post {this_deleted_post['title']} deleted"}
+    return {"Data": f"Post {id} deleted"}
 
 
 @app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
 def update_post(id: int, post: Post, db: Session = Depends(get_db)):
-    sql_sentence = "UPDATE posts SET "
-    sql_sentence += f"title = '{post.title}', content = '{post.content}'"
-    if post.published:
-        sql_sentence += f", published = {post.published}"
-    sql_sentence += f" WHERE id = {id} RETURNING *"
+    this_post = db.query(models.Post).filter(models.Post.id == id)
 
-    cursor.execute(sql_sentence)
-    this_post = cursor.fetchone()
-    conn.commit()
-
-    if not this_post:
+    if not this_post.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
 
-    return {"Data": f"Post {this_post['title']} updated"}
+    print(post.dict())
+    this_post.update(values=post.dict(), synchronize_session=False)
+    db.commit()
+
+    return {"Data": f"Post {this_post.first().title} updated"}

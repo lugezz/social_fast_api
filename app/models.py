@@ -10,4 +10,4 @@ class Post(Base):
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     published = Column(Boolean, server_default="TRUE")
-    created_at = Column(DateTime(), default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
