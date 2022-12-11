@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import models
+from app.oauth2 import get_current_user
 from app.schemas import Post, PostCreate
 
 
@@ -19,7 +20,7 @@ def get_posts(db: Session = Depends(get_db)):
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=Post)
-def create_post(post: PostCreate, db: Session = Depends(get_db)):
+def create_post(post: PostCreate, db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
 
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     # Easiest way unpacking the post dictionary
