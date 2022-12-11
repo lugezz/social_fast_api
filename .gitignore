@@ -1,4 +1,4 @@
 .vscode/
 env/
 *_pycache__/
-db_config.py
+config*.py

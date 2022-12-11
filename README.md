@@ -2,7 +2,7 @@
 
 from the **freecodecamp.org** Python API Development - Comprehensive Course 
 
-Config Postgres DB: In db_config.py
+Config Postgres DB: In config_db.py
 
 ```
 my_postgres_config = {
@@ -10,5 +10,13 @@ my_postgres_config = {
     'user': 'my_user',
     'password': 'my-password',
     'db_table': 'my_db_table'
+}
+```
+
+Config Postgres DB: In config_db.py
+
+```
+my_config = {
+    'secret_key': 'MyScretKey123'
 }
 ```

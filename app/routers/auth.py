@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.schemas import UserLogin, UserOut
+from app.oauth2 import creat_access_token
+from app.schemas import UserLogin
 from app.utils import verify_password
 
 
 router = APIRouter(tags=['Authentication'])
 
 
-@router.post('/login', response_model=UserOut)
+@router.post('/login')
 def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     this_user = db.query(User).filter(User.email == user_credentials.email).first()
 
@@ -24,4 +25,10 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': 'Invalid credentials'})
 
-    return this_user
+    access_token = creat_access_token(data={'user_id': this_user.id})
+    resp = {
+        'access_token': access_token,
+        'token_type': 'bearer'
+    }
+
+    return resp

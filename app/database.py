@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from app.db_config import my_postgres_config as db_cfg
+from app.config_db import my_postgres_config as db_cfg
 
 
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
