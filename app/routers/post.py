@@ -59,6 +59,10 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
 
+    if to_delete_post.first().owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail={'message': 'It can be deleted just for the owner'})
+
     to_delete_post.delete(synchronize_session=False)
     db.commit()
 
@@ -72,6 +76,10 @@ def update_post(id: int, post: PostCreate, db: Session = Depends(get_db), curren
     if not this_post.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
+
+    if this_post.first().owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail={'message': 'It can be updated just for the owner'})
 
     this_post.update(values=post.dict(), synchronize_session=False)
     db.commit()
