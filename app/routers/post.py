@@ -22,10 +22,10 @@ def get_posts(db: Session = Depends(get_db)):
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=Post)
 def create_post(post: PostCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
 
-    print(current_user.email)
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     # Easiest way unpacking the post dictionary
     new_post = models.Post(**post.dict())
+    new_post.owner_id = current_user.id
 
     db.add(new_post)
     db.commit()
