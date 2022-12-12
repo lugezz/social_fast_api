@@ -14,13 +14,29 @@ router = APIRouter(prefix="/posts", tags=['Posts'])
 
 
 @router.get("", response_model=List[Post])
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    """
+    Get all posts
+    """
+    print(current_user.id)
+
     posts = db.query(models.Post).all()
     return posts
 
 
+@router.get("/this-user", response_model=List[Post])
+def get_posts_this_user(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    """
+    Get all posts of the current user
+    """
+    print(current_user.id)
+
+    posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    return posts
+
+
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=Post)
-def create_post(post: PostCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+def create_post(post: PostCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
 
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     # Easiest way unpacking the post dictionary
@@ -52,7 +68,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+def delete_post(id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     to_delete_post = db.query(models.Post).filter(models.Post.id == id)
 
     if not to_delete_post.first():
@@ -70,7 +86,7 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
 
 
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=Post)
-def update_post(id: int, post: PostCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+def update_post(id: int, post: PostCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     this_post = db.query(models.Post).filter(models.Post.id == id)
 
     if not this_post.first():
