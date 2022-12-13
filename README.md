@@ -2,21 +2,20 @@
 
 from the **freecodecamp.org** Python API Development - Comprehensive Course 
 
-Config Postgres DB: In config_db.py
+Save these enviroment variables on .env file
 
 ```
-my_postgres_config = {
-    'server': 'my_server',
-    'user': 'my_user',
-    'password': 'my-password',
-    'db_table': 'my_db_table'
-}
+DB_SERVER=localhost
+DB_USER=my_user
+DB_PASSWORD=my_password
+DB_TABLE=fastapi
+SECRET_KEY=my_secret_key
 ```
 
-Config Postgres DB: In config_db.py
+And then save them
 
 ```
-my_config = {
-    'secret_key': 'MyScretKey123'
-}
+set -a
+source .env
+set +a
 ```

@@ -1,12 +1,16 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from app.config_db import my_postgres_config as db_cfg
 
-
+DB_S = os.environ['DB_SERVER']
+DB_U = os.environ['DB_USER']
+DB_P = os.environ['DB_PASSWORD']
+DB_T = os.environ['DB_TABLE']
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-SQLALCHEMY_DATABASE_URL = f"postgresql://{db_cfg['user']}:{db_cfg['password']}@{db_cfg['server']}/{db_cfg['db_table']}"
+SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_U}:{DB_P}@{DB_S}/{DB_T}"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

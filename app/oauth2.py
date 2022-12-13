@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
+import os
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.config import my_config
 from app.database import get_db
 from app.models import User
 from app.schemas import TokenData
@@ -18,7 +18,7 @@ We need 3 things:
 - Expiration time
 """
 
-SECRET_KEY = my_config['secret_key']
+SECRET_KEY = os.environ['SECRET_KEY']
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
