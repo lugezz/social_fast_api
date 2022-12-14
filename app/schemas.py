@@ -58,6 +58,11 @@ class Post(PostBase):
         orm_mode = True
 
 
+class PostOut(BaseModel):
+    Post: Post
+    votes: int
+
+
 # class Vote(BaseModel):
 #     post_id: int
 #     # 1: Like - 0: Not

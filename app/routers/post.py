@@ -1,21 +1,36 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import models
 from app.oauth2 import get_current_user
-from app.schemas import Post, PostCreate
+from app.schemas import Post, PostCreate, PostOut
 
 
 router = APIRouter(prefix="/posts", tags=['Posts'])
 
 
-@router.get("", response_model=List[Post])
+@router.get("", response_model=List[PostOut])
 def get_posts(db: Session = Depends(get_db), current_user=Depends(get_current_user),
               limit: int = 10, skip: int = 0, search: str = ''):
+    """
+    Get all posts
+    """
+
+    # isouter to set the JOIN as OUTER JOIN to show unvoted posts
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))
+    posts = posts.join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)
+    posts = posts.filter(models.Post.title.contains(search)).offset(skip).limit(limit).all()
+
+    return posts
+
+
+@router.get("", response_model=List[Post])
+def ex_get_posts(db: Session = Depends(get_db), current_user=Depends(get_current_user),
+                 limit: int = 10, skip: int = 0, search: str = ''):
     """
     Get all posts
     """
@@ -51,16 +66,21 @@ def create_post(post: PostCreate, db: Session = Depends(get_db), current_user=De
     return new_post
 
 
-@router.get("/latest", response_model=Post)
+@router.get("/latest", response_model=PostOut)
 def get_latest(db: Session = Depends(get_db)):
-    this_post = db.query(models.Post).order_by(desc(models.Post.id)).first()
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))
+    posts = posts.join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)    
+    this_post = posts.order_by(desc(models.Post.id)).first()
 
     return this_post
 
 
-@router.get("/{id}", response_model=Post)
+@router.get("/{id}", response_model=PostOut)
 def get_post(id: int, db: Session = Depends(get_db)):
-    this_post = db.query(models.Post).get(id)
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))
+    posts = posts.join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)
+    this_post = posts.filter(models.Post.id == id).first()
+
     if not this_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail={'message': f'Id {id} not found'})
