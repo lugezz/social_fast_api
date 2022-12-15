@@ -7,8 +7,6 @@ from app.routers import auth, post, user, vote
 
 
 origins = [
-    "http://localhost.tiangolo.com",
-    "https://localhost.tiangolo.com",
     "http://localhost",
     "http://localhost:8080",
 ]
