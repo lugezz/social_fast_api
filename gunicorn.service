@@ -1,0 +1,14 @@
+[Unit]
+Description=demo fastapi application
+After=network.target
+
+[Service]
+User=artime
+Group=artime
+WorkingDirectory=/home/artime/myapi/src/
+Environment="PATH=/home/artime/myapi/env/bin"
+EnvironmentFile=/home/artime/.env
+ExecStart=/home/artime/myapi/env/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+
+[Install]
+WantedBy=multi-user.target
