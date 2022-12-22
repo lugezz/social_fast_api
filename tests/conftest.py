@@ -2,8 +2,8 @@ from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.main import app
 
+from app.main import app
 from app.config import settings
 from app.database import get_db
 from app.database import Base
@@ -16,8 +16,7 @@ SQLALCHEMY_DATABASE_URL += f"{settings.db_server}:{settings.db_port}/{settings.d
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-TestingSessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture()
@@ -35,7 +34,6 @@ def session():
 @pytest.fixture()
 def client(session):
     def override_get_db():
-
         try:
             yield session
         finally:
@@ -46,9 +44,9 @@ def client(session):
 
 @pytest.fixture
 def test_user2(client):
-    user_data = {"email": "sanjeev123@gmail.com",
+    user_data = {"email": "test_users@gmail.com",
                  "password": "password123"}
-    res = client.post("/users/", json=user_data)
+    res = client.post("/users", json=user_data)
 
     assert res.status_code == 201
 
@@ -61,7 +59,7 @@ def test_user2(client):
 def test_user(client):
     user_data = {"email": "sanjeev@gmail.com",
                  "password": "password123"}
-    res = client.post("/users/", json=user_data)
+    res = client.post("/users", json=user_data)
 
     assert res.status_code == 201
 
