@@ -69,14 +69,14 @@ def create_post(post: PostCreate, db: Session = Depends(get_db), current_user=De
 @router.get("/latest", response_model=PostOut)
 def get_latest(db: Session = Depends(get_db)):
     posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))
-    posts = posts.join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)    
+    posts = posts.join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)
     this_post = posts.order_by(desc(models.Post.id)).first()
 
     return this_post
 
 
 @router.get("/{id}", response_model=PostOut)
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes'))
     posts = posts.join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id)
     this_post = posts.filter(models.Post.id == id).first()

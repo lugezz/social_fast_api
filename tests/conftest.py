@@ -21,7 +21,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture()
 def session():
-    print("my session fixture ran")
+    # print("my session fixture ran")
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
@@ -57,7 +57,7 @@ def test_user2(client):
 
 @pytest.fixture
 def test_user(client):
-    user_data = {"email": "sanjeev@gmail.com",
+    user_data = {"email": "escachulex@gmail.com",
                  "password": "password123"}
     res = client.post("/users", json=user_data)
 
@@ -75,10 +75,11 @@ def token(test_user):
 
 @pytest.fixture
 def authorized_client(client, token):
-    client.headers = {
-        **client.headers,
-        "Authorization": f"Bearer {token}"
-    }
+    # client.headers = {
+    #     **client.headers,
+    #     "Authorization": f"Bearer {token}"
+    # }
+    client.headers['Authorization'] = f'Bearer {token}'
 
     return client
 
