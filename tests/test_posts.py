@@ -45,6 +45,7 @@ def test_create_basic_post(authorized_client, test_user):
     assert res.status_code == 201
     assert created_post.title == 'Cachula'
     assert created_post.content == 'Cachula es cachula'
+    # Default true value test
     assert created_post.published
     assert created_post.owner_id == test_user['id']
 
