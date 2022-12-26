@@ -39,7 +39,7 @@ def test_get_one_post(authorized_client, test_posts):
 
 def test_create_basic_post(authorized_client, test_user):
     res = authorized_client.post(
-        "/posts", json={"title": 'Cachula', "content": 'Cachula es cachula', "published": True})
+        "/posts", json={"title": 'Argentina Champion', "content": 'Argentina World Cup Qatar 2022 Champion', "published": True})
 
     created_post = schemas.Post(**res.json())
     assert res.status_code == 201
