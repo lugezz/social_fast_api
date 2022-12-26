@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pulling git repo
-        uses: actions/checkout@v2
-      - name: Say hi to artime
-        run: echo "Hello Artime"
+        uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+      - run: python my_script.py
