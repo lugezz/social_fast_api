@@ -6,10 +6,7 @@ from app.models import Base
 from app.routers import auth, post, user, vote
 
 
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-]
+origins = ["*"]
 
 Base.metadata.create_all(bind=engine)
 
