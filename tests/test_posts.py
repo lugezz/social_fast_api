@@ -43,9 +43,8 @@ def test_create_basic_post(authorized_client, test_user):
 
     created_post = schemas.Post(**res.json())
     assert res.status_code == 201
-    assert created_post.title == 'Cachula'
-    assert created_post.content == 'Cachula es cachula'
-    # Default true value test
+    assert created_post.title == 'Argentina Champion'
+    assert created_post.content == 'Argentina World Cup Qatar 2022 Champion'
     assert created_post.published
     assert created_post.owner_id == test_user['id']
 
@@ -69,12 +68,12 @@ def test_create_post(authorized_client, test_user, title, content, published):
 
 def test_create_post_default_published_true(authorized_client, test_user):
     res = authorized_client.post(
-        "/posts", json={"title": "arbitrary title", "content": "aasdfjasdf"})
+        "/posts", json={"title": "Default Published Value", "content": "I have no a Default Published Value"})
 
     created_post = schemas.Post(**res.json())
     assert res.status_code == 201
-    assert created_post.title == "arbitrary title"
-    assert created_post.content == "aasdfjasdf"
+    assert created_post.title == "Default Published Value"
+    assert created_post.content == "I have no a Default Published Value"
     assert created_post.published
     assert created_post.owner_id == test_user['id']
 
