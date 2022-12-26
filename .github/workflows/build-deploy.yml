@@ -12,21 +12,21 @@ jobs:
     environment:
       name: testing
     env:
-      DB_SERVER: localhost
-      DB_PORT: 5432
-      DB_PASSWORD: artime80
-      DB_NAME: fastapi
-      DB_USER: artime
+      DB_SERVER: ${{secrets.DB_SERVER}}
+      DB_PORT: ${{secrets.DB_PORT}}
+      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+      DB_NAME: ${{secrets.DB_NAME}}
+      DB_USER: ${{secrets.DB_USER}}
       SECRET_KEY: ${{secrets.SECRET_KEY}}
-      ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      ALGORITHM: ${{secrets.ALGORITHM}}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
 
     services:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: artime80
-          POSTGRES_DB: fastapi_test
+          POSTGRES_PASSWORD: ${{secrets.DB_PASSWORD}}
+          POSTGRES_DB: ${{secrets.DB_NAME}}_test
         ports:
           - 5432:5432
         options: >-
