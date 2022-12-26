@@ -104,7 +104,7 @@ def test_delete_post_non_exist(authorized_client):
     assert res.status_code == 404
 
 
-def test_delete_other_user_post(authorized_client, test_user, test_posts):
+def test_delete_other_user_post(authorized_client, test_posts):
     res = authorized_client.delete(
         f"/posts/{test_posts[3].id}")
     assert res.status_code == 403
@@ -113,7 +113,7 @@ def test_delete_other_user_post(authorized_client, test_user, test_posts):
 def test_update_post(authorized_client, test_posts):
     data = {
         "title": "updated title",
-        "content": "updatd content",
+        "content": "updated content",
         "id": test_posts[0].id
 
     }
