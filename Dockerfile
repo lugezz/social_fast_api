@@ -1,4 +1,4 @@
-FROM python:3.9.7
+FROM python:3.10.6
 WORKDIR /usr/src/myapi
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
