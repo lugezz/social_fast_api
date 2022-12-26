@@ -72,12 +72,12 @@ jobs:
     environment:
       name: testing
     env:
-      SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-      REMOTE_HOST: ${{ secrets.HOST_DNS }}
-      REMOTE_USER: ${{ secrets.USERNAME }}
-      TARGET: ${{ secrets.TARGET_DIR }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      TARGET: ${{ secrets.REMOTE_TARGET }}
     steps:
       - name: Checkout the files
         uses: actions/checkout@v3
-      - name: Deploying to Aws
+      - name: Deploying to AWS
         uses: easingthemes/ssh-deploy@main
