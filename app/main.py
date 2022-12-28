@@ -8,6 +8,7 @@ from app.routers import auth, post, user, vote
 
 origins = ["*"]
 
+# TODO: Alembic config
 # Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
