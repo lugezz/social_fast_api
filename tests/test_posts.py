@@ -32,6 +32,7 @@ def test_get_one_post_not_exist(authorized_client):
 def test_get_one_post(authorized_client, test_posts):
     res = authorized_client.get(f"/posts/{test_posts[0].id}")
     post = schemas.PostOut(**res.json())
+    # Test Id, title and content
     assert post.Post.id == test_posts[0].id
     assert post.Post.content == test_posts[0].content
     assert post.Post.title == test_posts[0].title
